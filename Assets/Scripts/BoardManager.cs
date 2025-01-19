@@ -15,6 +15,11 @@ public class BoardManager : MonoBehaviour
     public List<Vector2Int> BluePath = new List<Vector2Int>();
     public List<Vector2Int> GreenPath = new List<Vector2Int>();
     public List<Vector2Int> YellowPath = new List<Vector2Int>();
+    public List<Vector2Int> redHomePos = new List<Vector2Int>();
+    public List<Vector2Int> blueHomePos = new List<Vector2Int>();
+    public List<Pawn> redPawns = new List<Pawn>();
+    public List<Pawn> bluePawns = new List<Pawn>();
+    public Transform pawnParent;
     Pawn rp1;
     Pawn bp1;
     void Start()
@@ -39,18 +44,25 @@ public class BoardManager : MonoBehaviour
                 CustomizeTile(i, j, go);
             }
         }
-        initPawn();
         redPath();
         bluePath();
-
-    }
-    public void initPawn()
-    {
-        rp1 = new Pawn(redPawn, new Vector2Int(8, 1), PawnType.Red, true);
-        bp1 = new Pawn(bluePawn, new Vector2Int(13, 8), PawnType.Blue, true);
+        
 
     }
     public void redPath() {
+
+        redHomePos.Add(new Vector2Int(440, 568));
+        redHomePos.Add(new Vector2Int(689, 563));
+        redHomePos.Add(new Vector2Int(565, 688));
+        redHomePos.Add(new Vector2Int(565, 445));
+        for(int i = 0; i < redHomePos.Count; i++)
+        {
+            GameObject go = Instantiate(redPawn, pawnParent);
+            go.name = "REDPAWN" + (i + 1);
+            go.GetComponent<RectTransform>().anchoredPosition = redHomePos[i];
+            Pawn rp = new Pawn(go,redHomePos[i], new Vector2Int(8, 1), PawnType.Red, true);
+            redPawns.Add(rp);
+        }
         // Start at (8, 1) and move upwards
         RedPath.Add(new Vector2Int(8, 1));
         RedPath.Add(new Vector2Int(8, 2));
@@ -134,8 +146,18 @@ public class BoardManager : MonoBehaviour
     }
     public void bluePath()
     {
-
-
+        blueHomePos.Add(new Vector2Int(440, -566));
+        blueHomePos.Add(new Vector2Int(567, -437));
+        blueHomePos.Add(new Vector2Int(692, -564));
+        blueHomePos.Add(new Vector2Int(568, -691));
+        for (int i = 0; i < blueHomePos.Count; i++)
+        {
+            GameObject go = Instantiate(bluePawn, pawnParent);
+            go.name = "BLUEPAWN" + (i + 1);
+            go.GetComponent<RectTransform>().anchoredPosition = blueHomePos[i];
+            Pawn bp = new Pawn(go,blueHomePos[i], new Vector2Int(13, 8), PawnType.Blue, true);
+            bluePawns.Add(bp);
+        }
 
         //start position
         BluePath.Add(new Vector2Int(13, 8));
@@ -245,14 +267,22 @@ public class BoardManager : MonoBehaviour
         if (count % 2 == 0)
         {
             Debug.Log("red chance");
-            rp1.pawnPlay = true;
-            bp1.pawnPlay = false;
+            for(int i = 0; i < 4; i++) {
+                redPawns[i].pawnPlay = true;
+                bluePawns[i].pawnPlay = false;
+            }
+
+            
         }
         else
         {
             Debug.Log("blue chance");
-            rp1.pawnPlay = false;
-            bp1.pawnPlay = true;
+            for (int i = 0; i < 4; i++)
+            {
+                redPawns[i].pawnPlay = false;
+                bluePawns[i].pawnPlay = true;
+            }
+            
         }
         count++;
     }
@@ -290,35 +320,38 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    public void deletePawn(PawnType currentType,Vector2Int destPost)
+    public void deletePawn(PawnType currentType, Vector2Int destPost)
     {
         Debug.Log("checking for deleteingffd");
-        if(currentType == PawnType.Blue)
+        if (currentType == PawnType.Blue)
         {
-            if(rp1.currentPos.x == destPost.x && rp1.currentPos.y == destPost.y)
+            for(int i =0;i<redPawns.Count;i++)
             {
-                rp1 = sendBackToHome(rp1);
+                if (redPawns[i].currentPos.x == destPost.x && redPawns[i].currentPos.y == destPost.y)
+                {
+                    redPawns[i].go.GetComponent<RectTransform>().anchoredPosition = redPawns[i].blockPosition;
+                    redPawns[i].pawnLock = true;
+                    redPawns[i].pawnSteps = 0;
+                    redPawns[i].pawnPlay = false;
+                }
             }
         }
         else
         {
-            Debug.Log("bp1 current post " + bp1.currentPos);
-            Debug.Log("destination position "+destPost);
-            if (bp1.currentPos.x == destPost.x && bp1.currentPos.y == destPost.y)
+            for (int i = 0; i < bluePawns.Count; i++)
             {
-                bp1 = sendBackToHome(bp1);
+                if (bluePawns[i].currentPos.x == destPost.x && bluePawns[i].currentPos.y == destPost.y)
+                {
+                    bluePawns[i].go.GetComponent<RectTransform>().anchoredPosition = bluePawns[i].blockPosition;
+                    bluePawns[i].pawnLock = true;
+                    bluePawns[i].pawnSteps = 0;
+                    bluePawns[i].pawnPlay = false;
+                }
             }
         }
     }
 
-    Pawn sendBackToHome(Pawn pawn)
-    {
-        Debug.Log("deletign pawn ");
-        pawn.go.transform.position = new Vector3Int(428, 596,0);
-        pawn = new Pawn(redPawn, new Vector2Int(8, 1), pawn.pawnType, true);
-        return pawn;
-
-    }
+   
 
 }
 
@@ -328,4 +361,8 @@ public class Tile
     public GameObject tile;
     public TileType type;
 }
-
+public class TwoPawnChance
+{
+    public bool redChance;
+    public bool blueChance;
+}

@@ -12,9 +12,11 @@ public class Pawn
     public int pawnSteps;
     public bool pawnPlay;
     public Vector2Int currentPos;
-    public Pawn(GameObject pawn,Vector2Int index,PawnType color,bool pawnlock)
+    public Vector2Int blockPosition;
+    public Pawn(GameObject pawn,Vector2Int blockPosition,Vector2Int index,PawnType color,bool pawnlock)
     {
         this.go = pawn;
+        this.blockPosition = blockPosition;
         this.startPos = index;
         this.pawnLock = pawnlock;
         this.pawnType = color;
@@ -69,6 +71,7 @@ public class Pawn
             go.transform.position = BoardManager.instance.grid[startPos.x, startPos.y].tile.transform.position;
             this.currentPos = new Vector2Int(startPos.x, startPos.y);
             this.pawnLock = false;
+            BoardManager.instance.diceValue = 0;
         }
         
         this.pawnPlay = false;
